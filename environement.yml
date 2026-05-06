@@ -1,0 +1,17 @@
+name: pytorch-env
+channels:
+  - nvidia
+  - conda-forge
+dependencies:
+  - python==3.12
+  - pip
+  - datasets
+  - transformers
+  - pyyaml
+  - pydantic
+  # PyTorch ecosystem 
+  - pip:
+    - pytorch
+    - torchaudio
+    - torchvision
+    - torchvision-extra-decoders
