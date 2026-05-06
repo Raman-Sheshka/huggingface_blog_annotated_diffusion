@@ -1,32 +1,41 @@
-# create my variables here
-
 #!/bin/bash
-#SBATCH --job-name=__JOB_NAME__
+#SBATCH --job-name=diffusion_denoise_unet_simple
 #SBATCH --partition=gpu-b300-288g-ellis
-#SBATCH --gres=gpu:__NUM_GPUS__
+#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
-#SBATCH --time=__TIME_LIMIT__
-#SBATCH --output=__LOG_FILE__
-#SBATCH --error=__LOG_FILE__
+#SBATCH --time=02:00:00
 
-echo "[START] $(date) - Running: __SCRIPT_TO_RUN__"
 
-# ========== load environment and modules ==========
+set -euo pipefail
+
+#Make the script fail early if something goes wrong:
+#
+#-e: stop on command error
+#-u: fail on undefined variable
+#pipefail: fail if any command in a pipeline fails
+
+
+echo "[START] $(date)"
+echo "[JOB] ${SLURM_JOB_NAME:-local} ${SLURM_JOB_ID:-no_job_id}"
+echo "[NODE] ${SLURM_NODELIST:-local}"
+
+REPO_DIR="${SLURM_SUBMIT_DIR:-$(pwd)}"
+
+cd "$REPO_DIR"
+
+echo "[REPO] $REPO_DIR"
+
+# Load Triton modules. Adjust these if your cluster partition requires different versions.
 source ~/.bashrc
+module load scicomp-python-env
 
-# load necessary modules (adjust as needed for your environment)
+#echo "[PYTHON] $(which python)"
+#python --version
 
-#module load triton/2025.1-gcc
-#module load gcc/13.3.0
-#module load cuda/12.6.2
+#echo "[CUDA]"
+#nvidia-smi
 
-source activate pytorch-env
+python main.py
 
-# set environment variables for CUDA and compilers
-#export CC=$(which gcc)
-#export CXX=$(which g++)
-#export CUDAHOSTCXX=$(which g++)
-#export CUDA_HOME=$(dirname $(dirname $(which nvcc)))
-#export PATH="$CUDA_HOME/bin:$PATH"
-#export LD_LIBRARY_PATH="$CUDA_HOME/lib64:$LD_LIBRARY_PATH"
+echo "[END] $(date)"

@@ -7,11 +7,13 @@ logger = get_logger(__name__)
 
 
 def main() -> None:
+    
     setup_logging()
-    logger.info("Launching diffusion denoise training")
+    logger.info(" Launching diffusion denoise training")
 
     model = DiffusionModel()
     model.train(settings.num_epochs)
+    logger.info("✅  Finished training diffusion model")
 
 
 if __name__ == "__main__":
