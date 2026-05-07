@@ -7,13 +7,7 @@
 #SBATCH --time=02:00:00
 
 
-set -euo pipefail
-
-#Make the script fail early if something goes wrong:
-#
-#-e: stop on command error
-#-u: fail on undefined variable
-#pipefail: fail if any command in a pipeline fails
+set -eo pipefail
 
 
 echo "[START] $(date)"
@@ -26,15 +20,12 @@ cd "$REPO_DIR"
 
 echo "[REPO] $REPO_DIR"
 
-# Load Triton modules. Adjust these if your cluster partition requires different versions.
+export BASHRCSOURCED="${BASHRCSOURCED:-0}"
 source ~/.bashrc
+
 module load scicomp-python-env
 
-#echo "[PYTHON] $(which python)"
-#python --version
-
-#echo "[CUDA]"
-#nvidia-smi
+set -u
 
 python main.py
 
