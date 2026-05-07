@@ -58,6 +58,18 @@ class DiffusionModel(nn.Module):
         torch.save(self.model.state_dict(), path)
         logger.info("Saved model checkpoint to %s", path)
         return
+
+    def save_samples(self, name, num_samples=16):
+        if self.model is None:
+            raise ValueError("Model not initialized. Please train or load the model before sampling.")
+
+        samples = self.inference(num_samples=num_samples)
+        final_samples = torch.from_numpy(samples[-1])
+        final_samples = (final_samples + 1) * 0.5
+        sample_path = SAMPLES_DIR / f"{name}.png"
+        save_image(final_samples, str(sample_path), nrow=4)
+        logger.info("Saved generated sample grid to %s", sample_path)
+        return sample_path
     
         
     def train(self, epochs):
@@ -115,25 +127,12 @@ class DiffusionModel(nn.Module):
                     self.optimizer.step()
 
                     # save generated images
-                    if step != 0 and step % settings.save_and_sample_every == 0:
-                        milestone = step // settings.save_and_sample_every
-                        batches = num_to_groups(4, batch_size)
-                        all_images_list = list(
-                            map(lambda n: sample(self.model,
-                                                 image_size=settings.image_size,
-                                                 batch_size=n,
-                                                 channels=settings.channels
-                                                 ), batches
-                                )
-                        )
-                        all_images = torch.cat(all_images_list, dim=0)
-                        all_images = (all_images + 1) * 0.5
-                        sample_path = SAMPLES_DIR / f'sample_{self.run_tag}_{milestone}.png'
-                        save_image(all_images, str(sample_path), nrow = 6)
-                        logger.info(f"Saved generated sample grid to {sample_path}")
+                    if global_step != 0 and global_step % settings.save_and_sample_every == 0:
+                        self.save_samples(f"sample_{self.run_tag}_step_{global_step}", num_samples=16)
 
                     global_step += 1
-        
+	        
+        self.save_samples(f"sample_{self.run_tag}_final", num_samples=16)
         self.save_model(self.model_path)             
         return
     
