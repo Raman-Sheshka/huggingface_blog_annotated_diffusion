@@ -28,10 +28,6 @@ forward_diffusion = ForwardDiffusion(timesteps=settings.timesteps,
                                          beta_start=settings.beta_start,
                                          beta_end=settings.beta_end)
 
-logger.info("Initializing dataloader")
-dataloader = get_dataloader()
-
-
 class DiffusionModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -67,7 +63,8 @@ class DiffusionModel(nn.Module):
     def train(self, epochs):
         
         self.init_model()
-        self.dataloader = dataloader
+        logger.info("Initializing dataloader")
+        self.dataloader = get_dataloader()
         global_step = 0
         logger.info(
             "Starting training: epochs=%s, device=%s, image_size=%s, channels=%s, batch_size=%s",
@@ -220,7 +217,7 @@ def p_sample_loop(model, shape):
     img = torch.randn(shape, device=device)
     imgs = []
     
-    for i in range(0, settings.timesteps):
+    for i in reversed(range(0, settings.timesteps)):
         img = p_sample(model, img, torch.full((b,), i, device=device, dtype=torch.long), i)
         imgs.append(img.cpu().numpy())
     return imgs
